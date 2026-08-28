@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D & WebAR Viewer (ファイル参照対応)</title>
+    <!-- Google ＆ Apple 共通 WebAR ライブラリ -->
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.3.0/model-viewer.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #f5f5f7;
+        }
+
+        /* ファイル選択 UI */
+        #ui-container {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 10;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 12px 16px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            backdrop-filter: blur(10px);
+        }
+
+        .file-label {
+            font-weight: bold;
+            cursor: pointer;
+            color: #0071e3;
+            font-size: 14px;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        /* 3Dモデル表示領域 */
+        model-viewer {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* AR起動ボタン（画面中央下） */
+        #ar-button {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 14px 28px;
+            background-color: #0071e3;
+            color: white;
+            border: none;
+            border-radius: 24px;
+            font-size: 16px;
+            font-weight: bold;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+            cursor: pointer;
+            display: none; /* ファイル選択後に表示 */
+        }
+    </style>
+</head>
+<body>
+
+<!-- UI: 外部ファイル参照コントロール -->
+<div id="ui-container">
+    <label for="glb-input" class="file-label">
+        📂 GLB / GLTF ファイルを選択
+    </label>
+    <input type="file" id="glb-input" accept=".glb,.gltf">
+    <div id="file-name" style="font-size: 12px; color: #666; margin-top: 4px;">ファイル未選択</div>
+</div>
+
+<!-- 3D & AR ビューアー部分 -->
+<model-viewer 
+    id="viewer"
+    ar 
+    ar-modes="webxr scene-viewer quick-look" 
+    camera-controls 
+        shadow-intensity="1"
+    alt="選択された3Dモデル">
+    
+    <!-- AR起動ボタン -->
+    <button slot="ar-button" id="ar-button">
+        📱 カメラで AR 表示（実寸大）
+    </button>
+</model-viewer>
+
+<script>
+    const glbInput = document.getElementById('glb-input');
+    const viewer = document.getElementById('viewer');
+    const fileNameDiv = document.getElementById('file-name');
+    const arButton = document.getElementById('ar-button');
+
+    // ファイル参照イベント処理
+    glbInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        
+        if (file) {
+            fileNameDiv.textContent = file.name;
+            
+            // 選択されたローカルファイルを URL オブジェクトに変換してビューアーにセット
+            const objectURL = URL.createObjectURL(file);
+            viewer.src = objectURL;
+            
+            // ARボタンを表示
+            arButton.style.display = 'block';
+        } else {
+            fileNameDiv.textContent = 'ファイル未選択';
+            arButton.style.display = 'none';
+        }
+    });
+</script>
+
+</body>
+</html>
