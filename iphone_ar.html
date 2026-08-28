@@ -3,117 +3,100 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D & WebAR Viewer (ファイル参照対応)</title>
-    <!-- Google ＆ Apple 共通 WebAR ライブラリ -->
-    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.3.0/model-viewer.min.js"></script>
+    <title>iPhone AR Viewer</title>
     <style>
         body {
-            margin: 0;
-            padding: 0;
-            width: 100vw;
-            height: 100vh;
-            overflow: hidden;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
             background-color: #f5f5f7;
+            padding: 20px;
+            box-sizing: border-box;
         }
-
-        /* ファイル選択 UI */
-        #ui-container {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            z-index: 10;
-            background: rgba(255, 255, 255, 0.9);
-            padding: 12px 16px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            backdrop-filter: blur(10px);
+        .card {
+            background: #ffffff;
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
         }
-
         .file-label {
+            display: block;
+            padding: 14px 20px;
+            background: #0071e3;
+            color: #ffffff;
+            border-radius: 12px;
             font-weight: bold;
             cursor: pointer;
-            color: #0071e3;
-            font-size: 14px;
+            margin-bottom: 12px;
+            font-size: 15px;
         }
-
         input[type="file"] {
             display: none;
         }
-
-        /* 3Dモデル表示領域 */
-        model-viewer {
-            width: 100%;
-            height: 100%;
-        }
-
-        /* AR起動ボタン（画面中央下） */
-        #ar-button {
-            position: absolute;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 14px 28px;
-            background-color: #0071e3;
-            color: white;
-            border: none;
-            border-radius: 24px;
+        .ar-button {
+            display: none; /* ファイル選択後に表示 */
+            padding: 16px 24px;
             font-size: 16px;
             font-weight: bold;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-            cursor: pointer;
-            display: none; /* ファイル選択後に表示 */
+            color: #ffffff;
+            background-color: #34c759;
+            border-radius: 12px;
+            text-decoration: none;
+            box-shadow: 0 4px 12px rgba(52, 199, 89, 0.3);
+            margin-top: 15px;
+        }
+        .file-info {
+            font-size: 13px;
+            color: #86868b;
+            margin-top: 8px;
+            word-break: break-all;
         }
     </style>
 </head>
 <body>
 
-<!-- UI: 外部ファイル参照コントロール -->
-<div id="ui-container">
-    <label for="glb-input" class="file-label">
-        📂 GLB / GLTF ファイルを選択
+<div class="card">
+    <h2>板金 3D/AR Viewer</h2>
+    
+    <!-- 1. USDZ ファイル選択ボタン -->
+    <label for="usdz-input" class="file-label">
+        📂 USDZ ファイルを参照・選択
     </label>
-    <input type="file" id="glb-input" accept=".glb,.gltf">
-    <div id="file-name" style="font-size: 12px; color: #666; margin-top: 4px;">ファイル未選択</div>
+    <input type="file" id="usdz-input" accept=".usdz">
+
+    <div id="file-info" class="file-info">USDZファイルを選択してください</div>
+
+    <!-- 2. Apple Quick Look 起動リンク -->
+    <a id="ar-link" rel="ar" href="#" class="ar-button">
+        📱 カメラで AR 表示（実寸大）
+    </a>
 </div>
 
-<!-- 3D & AR ビューアー部分 -->
-<model-viewer 
-    id="viewer"
-    ar 
-    ar-modes="webxr scene-viewer quick-look" 
-    camera-controls 
-        shadow-intensity="1"
-    alt="選択された3Dモデル">
-    
-    <!-- AR起動ボタン -->
-    <button slot="ar-button" id="ar-button">
-        📱 カメラで AR 表示（実寸大）
-    </button>
-</model-viewer>
-
 <script>
-    const glbInput = document.getElementById('glb-input');
-    const viewer = document.getElementById('viewer');
-    const fileNameDiv = document.getElementById('file-name');
-    const arButton = document.getElementById('ar-button');
+    const fileInput = document.getElementById('usdz-input');
+    const arLink = document.getElementById('ar-link');
+    const fileInfo = document.getElementById('file-info');
 
-    // ファイル参照イベント処理
-    glbInput.addEventListener('change', (e) => {
+    fileInput.addEventListener('change', (e) => {
         const file = e.target.files[0];
         
         if (file) {
-            fileNameDiv.textContent = file.name;
+            fileInfo.textContent = `選択中: ${file.name}`;
             
-            // 選択されたローカルファイルを URL オブジェクトに変換してビューアーにセット
+            // 選択されたローカルUSDZを Blob URL 形式へ変換して Quick Look リンクにセット
             const objectURL = URL.createObjectURL(file);
-            viewer.src = objectURL;
-            
-            // ARボタンを表示
-            arButton.style.display = 'block';
+            arLink.href = objectURL;
+            arLink.style.display = 'inline-block';
         } else {
-            fileNameDiv.textContent = 'ファイル未選択';
-            arButton.style.display = 'none';
+            arLink.style.display = 'none';
+            fileInfo.textContent = 'USDZファイルを選択してください';
         }
     });
 </script>
