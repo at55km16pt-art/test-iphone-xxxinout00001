@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>ボイス翻訳トーク</title>
+  <title>ボイス翻訳トーク (Gemini版)</title>
   <style>
     :root {
       --primary-color: #007aff;
@@ -12,7 +12,7 @@
       --text-color: #1c1c1e;
     }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background-color: var(--bg-color);
       color: var(--text-color);
       margin: 0;
@@ -28,16 +28,9 @@
       align-items: center;
       margin-bottom: 16px;
     }
-    h1 {
-      font-size: 20px;
-      margin: 0;
-    }
+    h1 { font-size: 20px; margin: 0; }
     .icon-btn {
-      background: none;
-      border: none;
-      font-size: 20px;
-      cursor: pointer;
-      padding: 8px;
+      background: none; border: none; font-size: 20px; cursor: pointer; padding: 8px;
     }
     .card {
       background: var(--card-bg);
@@ -46,151 +39,63 @@
       margin-bottom: 16px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     }
-    .card-title {
-      font-size: 12px;
-      font-weight: bold;
-      color: #8e8e93;
-      margin-bottom: 8px;
-    }
+    .card-title { font-size: 12px; font-weight: bold; color: #8e8e93; margin-bottom: 8px; }
     .text-box {
-      width: 100%;
-      height: 90px;
-      border: none;
-      resize: none;
-      font-size: 16px;
-      box-sizing: border-box;
-      outline: none;
-      background: transparent;
-      font-family: inherit;
+      width: 100%; height: 90px; border: none; resize: none; font-size: 16px;
+      box-sizing: border-box; outline: none; background: transparent; font-family: inherit;
     }
     .controls {
-      display: flex;
-      gap: 12px;
-      margin-top: auto;
-      padding-bottom: 16px;
+      display: flex; gap: 12px; margin-top: auto; padding-bottom: 16px;
     }
     .btn {
-      flex: 1;
-      padding: 18px;
-      border: none;
-      border-radius: 14px;
-      font-size: 16px;
-      font-weight: bold;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      user-select: none;
-      -webkit-user-select: none;
-      touch-action: manipulation;
+      flex: 1; padding: 18px; border: none; border-radius: 14px; font-size: 16px;
+      font-weight: bold; cursor: pointer; display: flex; align-items: center;
+      justify-content: center; gap: 8px; user-select: none; touch-action: manipulation;
     }
-    .btn-mic {
-      background-color: #e5f1ff;
-      color: var(--primary-color);
-    }
-    .btn-mic.recording {
-      background-color: #ff3b30;
-      color: white;
-      animation: pulse 1.5s infinite;
-    }
-    .btn-speak {
-      background-color: #34c759;
-      color: white;
-    }
-    .btn-speak:disabled {
-      background-color: #c7c7cc;
-    }
-    select {
-      width: 100%;
-      padding: 12px;
-      border-radius: 10px;
-      border: 1px solid #d1d1d6;
-      background: white;
-      font-size: 14px;
-      margin-bottom: 16px;
-    }
+    .btn-mic { background-color: #e5f1ff; color: var(--primary-color); }
+    .btn-mic.recording { background-color: #ff3b30; color: white; animation: pulse 1.5s infinite; }
+    .btn-speak { background-color: #34c759; color: white; }
     
-    /* モーダル画面（設定・履歴用） */
     .modal {
-      display: none;
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.5);
-      z-index: 100;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
+      display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center; padding: 20px;
     }
     .modal-content {
-      background: white;
-      border-radius: 16px;
-      padding: 20px;
-      width: 100%;
-      max-width: 400px;
-      max-height: 80vh;
-      overflow-y: auto;
+      background: white; border-radius: 16px; padding: 20px; width: 100%; max-width: 400px; max-height: 80vh; overflow-y: auto;
     }
-    .input-group {
-      margin-bottom: 12px;
-    }
-    .input-group label {
-      display: block;
-      font-size: 12px;
-      color: #8e8e93;
-      margin-bottom: 4px;
-    }
-    .input-group input {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid #d1d1d6;
-      border-radius: 8px;
-      box-sizing: border-box;
-    }
-    .history-item {
-      border-bottom: 1px solid #e5e5ea;
-      padding: 10px 0;
-    }
+    .input-group { margin-bottom: 12px; }
+    .input-group label { display: block; font-size: 12px; color: #8e8e93; margin-bottom: 4px; }
+    .input-group input { width: 100%; padding: 10px; border: 1px solid #d1d1d6; border-radius: 8px; box-sizing: border-box; }
+    .history-item { border-bottom: 1px solid #e5e5ea; padding: 10px 0; }
     .history-ja { font-weight: bold; font-size: 14px; }
     .history-en { color: #555; font-size: 14px; margin-top: 4px; }
 
-    @keyframes pulse {
-      0% { opacity: 1; }
-      50% { opacity: 0.6; }
-      100% { opacity: 1; }
-    }
+    @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
   </style>
 </head>
 <body>
 
   <header>
-    <h1>ボイス翻訳トーク</h1>
+    <h1>ボイス翻訳トーク (Gemini)</h1>
     <div>
       <button class="icon-btn" onclick="openModal('historyModal')">📜</button>
-      <button class="icon-btn" onclick="openModal('settingsModal')">⚙️️</button>
+      <button class="icon-btn" onclick="openModal('settingsModal')">⚙</button>
     </div>
   </header>
 
-  <!-- 2) 日本語表示 -->
+  <!-- 日本語表示画面 -->
   <div class="card">
     <div class="card-title">日本語 (認識結果)</div>
     <textarea id="txtJapanese" class="text-box" placeholder="「話す」ボタンを押しながら話してください..."></textarea>
   </div>
 
-  <!-- 3) 英語表示 -->
+  <!-- 英語表示画面 -->
   <div class="card">
     <div class="card-title">英語 (翻訳結果)</div>
     <textarea id="txtEnglish" class="text-box" placeholder="翻訳された英語がここに表示されます..."></textarea>
   </div>
 
-  <!-- ボイスモデル選択 -->
-  <label class="card-title" style="margin-left: 4px;">発話ボイスを選択</label>
-  <select id="voiceSelect">
-    <option value="pNInz6obpgDQGcFmaJgB">Adam (男性・標準英語)</option>
-    <option value="21m00Tcm4TlvDq8ikWAM">Rachel (女性・標準英語)</option>
-  </select>
-
-  <!-- 1) & 4) ボタンエリア -->
+  <!-- ボタンエリア -->
   <div class="controls">
     <button id="btnTalk" class="btn btn-mic">
       <span>🎤</span> <span id="talkLabel">話す (長押し)</span>
@@ -200,27 +105,22 @@
     </button>
   </div>
 
-  <!-- ⚙️ APIキー設定モーダル -->
+  <!-- 設定画面 -->
   <div id="settingsModal" class="modal">
     <div class="modal-content">
-      <h3>APIキー・設定</h3>
-      <div class="input-group">
-        <label>OpenAI API Key</label>
-        <input type="password" id="openaiKey" placeholder="sk-...">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h3>Gemini API設定</h3>
+        <button class="icon-btn" onclick="closeModal('settingsModal')">✖</button>
       </div>
       <div class="input-group">
-        <label>ElevenLabs API Key</label>
-        <input type="password" id="elevenlabsKey" placeholder="sk_...">
-      </div>
-      <div class="input-group">
-        <label>カスタム Voice ID (自分の声を使う場合)</label>
-        <input type="text" id="customVoiceId" placeholder="Voice ID を入力">
+        <label>Gemini API Key</label>
+        <input type="password" id="geminiKey" placeholder="AIzaSy...">
       </div>
       <button class="btn btn-speak" style="width: 100%; margin-top: 12px;" onclick="saveSettings()">設定を保存</button>
     </div>
   </div>
 
-  <!-- 📜 履歴モーダル -->
+  <!-- 履歴表示画面 -->
   <div id="historyModal" class="modal">
     <div class="modal-content">
       <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -232,41 +132,37 @@
   </div>
 
   <script>
+    // ★ ここにご自身の Gemini API Key を設定すると最初から設定なしで動きます
+    const DEFAULT_GEMINI_KEY = "your_gemini_api_key_here";
+
     let mediaRecorder;
     let audioChunks = [];
     let historyData = JSON.parse(localStorage.getItem('translateHistory') || '[]');
 
-    // 画面初期化時に設定を読み込む
     window.onload = () => {
-      document.getElementById('openaiKey').value = localStorage.getItem('openai_key') || '';
-      document.getElementById('elevenlabsKey').value = localStorage.getItem('elevenlabs_key') || '';
-      document.getElementById('customVoiceId').value = localStorage.getItem('custom_voice_id') || '';
-
-      const customId = localStorage.getItem('custom_voice_id');
-      if (customId) {
-        const select = document.getElementById('voiceSelect');
-        const opt = document.createElement('option');
-        opt.value = customId;
-        opt.text = "自分の英語ボイスモデル (カスタム)";
-        opt.selected = true;
-        select.add(opt, 0);
+      const savedKey = localStorage.getItem('gemini_key');
+      if (!savedKey && DEFAULT_GEMINI_KEY !== "your_gemini_api_key_here") {
+        localStorage.setItem('gemini_key', DEFAULT_GEMINI_KEY);
       }
+      document.getElementById('geminiKey').value = getGeminiKey();
       renderHistory();
     };
+
+    function getGeminiKey() {
+      return localStorage.getItem('gemini_key') || DEFAULT_GEMINI_KEY;
+    }
 
     function openModal(id) { document.getElementById(id).style.display = 'flex'; }
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
     function saveSettings() {
-      localStorage.setItem('openai_key', document.getElementById('openaiKey').value.trim());
-      localStorage.setItem('elevenlabs_key', document.getElementById('elevenlabsKey').value.trim());
-      localStorage.setItem('custom_voice_id', document.getElementById('customVoiceId').value.trim());
-      alert('設定を保存しました');
+      localStorage.setItem('gemini_key', document.getElementById('geminiKey').value.trim());
+      alert('Gemini API Key を保存しました');
       closeModal('settingsModal');
       location.reload();
     }
 
-    // --- 1) マイク録音 (iPhone タッチ/長押し対応) ---
+    // --- 1) マイク録音 (長押し) ---
     const btnTalk = document.getElementById('btnTalk');
     
     const startRecording = async (e) => {
@@ -276,13 +172,13 @@
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         mediaRecorder = new MediaRecorder(stream);
         mediaRecorder.ondataavailable = event => audioChunks.push(event.data);
-        mediaRecorder.onstop = processAudio;
+        mediaRecorder.onstop = processAudioWithGemini;
         mediaRecorder.start();
         
         btnTalk.classList.add('recording');
         document.getElementById('talkLabel').innerText = '録音中... (離すと完了)';
       } catch (err) {
-        alert('マイクへのアクセス許可が必要です: ' + err.message);
+        alert('マイク許可が必要です: ' + err.message);
       }
     };
 
@@ -295,116 +191,85 @@
       }
     };
 
-    // iPhone (Touch) & PC (Mouse) 両対応のイベント設定
     btnTalk.addEventListener('touchstart', startRecording);
     btnTalk.addEventListener('touchend', stopRecording);
     btnTalk.addEventListener('mousedown', startRecording);
     btnTalk.addEventListener('mouseup', stopRecording);
 
-    // --- 2) & 3) 音声認識 (Whisper) と 翻訳 (ChatGPT) ---
-    async function processAudio() {
-      const apiKey = localStorage.getItem('openai_key');
-      if (!apiKey) {
-        alert('⚙️ 設定ボタンから OpenAI API Key を入力してください');
+    // --- 2) Gemini で「音声認識＋日本語表示＋英語翻訳」を一括処理 ---
+    async function processAudioWithGemini() {
+      const apiKey = getGeminiKey();
+      if (!apiKey || apiKey === "your_gemini_api_key_here") {
+        alert('Gemini API Key を設定してください。');
         openModal('settingsModal');
         return;
       }
 
-      const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-      const formData = new FormData();
-      formData.append('file', audioBlob, 'recording.wav');
-      formData.append('model', 'whisper-1');
-      formData.append('language', 'ja');
+      document.getElementById('txtJapanese').value = "Geminiで音声解析中...";
+      document.getElementById('txtEnglish').value = "翻訳中...";
 
-      document.getElementById('txtJapanese').value = "音声認識中...";
+      const audioBlob = new Blob(audioChunks, { type: 'audio/mp3' });
+      const reader = new FileReader();
+      
+      reader.readAsDataURL(audioBlob);
+      reader.onloadend = async () => {
+        const base64Audio = reader.result.split(',')[1];
 
-      try {
-        // 2) 音声認識
-        const sttRes = await fetch('https://api.openai.com/v1/audio/transcriptions', {
-          method: 'POST',
-          headers: { 'Authorization': `Bearer ${apiKey}` },
-          body: formData
-        });
-        const sttData = await sttRes.json();
-        const jaText = sttData.text || '';
-        document.getElementById('txtJapanese').value = jaText;
+        try {
+          // Gemini 1.5 Flash に音声ファイルを直接渡して認識と翻訳を要求
+          const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{
+                parts: [
+                  { inline_data: { mime_type: "audio/mp3", data: base64Audio } },
+                  { text: "入力された日本語音声を文字起こしし、さらに自然な会話表現の英語に翻訳してください。出力は必ず次のJSON形式のみで返してください: {\"ja\": \"日本語の文字起こし\", \"en\": \"英語翻訳\"}" }
+                ]
+              }]
+            })
+          });
 
-        if (!jaText) return;
+          const data = await response.json();
+          const rawText = data.candidates[0].content.parts[0].text;
+          
+          // クリーンなJSONに整形してパース
+          const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            const parsed = JSON.parse(jsonMatch[0]);
+            document.getElementById('txtJapanese').value = parsed.ja || '';
+            document.getElementById('txtEnglish').value = parsed.en || '';
 
-        document.getElementById('txtEnglish').value = "翻訳中...";
+            // 履歴追加
+            historyData.unshift({ ja: parsed.ja, en: parsed.en });
+            localStorage.setItem('translateHistory', JSON.stringify(historyData));
+            renderHistory();
+          } else {
+            document.getElementById('txtJapanese').value = rawText;
+          }
 
-        // 3) 英語翻訳
-        const transRes = await fetch('https://api.openai.com/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${apiKey}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            model: "gpt-4o-mini",
-            messages: [
-              { role: "system", content: "Translate the following Japanese text into natural spoken English." },
-              { role: "user", content: jaText }
-            ]
-          })
-        });
-        const transData = await transRes.json();
-        const enText = transData.choices[0].message.content.trim();
-        document.getElementById('txtEnglish').value = enText;
-
-        // 5) 履歴保存
-        historyData.unshift({ ja: jaText, en: enText });
-        localStorage.setItem('translateHistory', JSON.stringify(historyData));
-        renderHistory();
-
-      } catch (err) {
-        alert('エラーが発生しました: ' + err.message);
-      }
+        } catch (err) {
+          alert('Gemini API エラー: ' + err.message);
+        }
+      };
     }
 
-    // --- 4) 英語トーク (ElevenLabs 音声再生) ---
-    async function speakEnglish() {
-      const apiKey = localStorage.getItem('elevenlabs_key');
+    // --- 3) 英語トーク (標準TTS読み上げ) ---
+    function speakEnglish() {
       const enText = document.getElementById('txtEnglish').value.trim();
-      const voiceId = document.getElementById('voiceSelect').value;
-
-      if (!apiKey) {
-        alert('⚙️ 設定ボタンから ElevenLabs API Key を入力してください');
-        openModal('settingsModal');
-        return;
-      }
       if (!enText) {
         alert('発話する英語テキストがありません');
         return;
       }
 
-      try {
-        const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
-          method: 'POST',
-          headers: {
-            'Accept': 'audio/mpeg',
-            'xi-api-key': apiKey,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            text: enText,
-            model_id: "eleven_multilingual_v2"
-          })
-        });
-
-        if (!response.ok) throw new Error('音声生成に失敗しました');
-
-        const audioBlob = await response.blob();
-        const audioUrl = URL.createObjectURL(audioBlob);
-        const audio = new Audio(audioUrl);
-        audio.play();
-
-      } catch (err) {
-        alert('音声再生エラー: ' + err.message);
-      }
+      // ブラウザ標準（Web Speech API）による自然な英語音声読み上げ
+      const utterance = new SpeechSynthesisUtterance(enText);
+      utterance.lang = 'en-US';
+      utterance.rate = 1.0;
+      window.speechSynthesis.speak(utterance);
     }
 
-    // --- 5) 履歴表示 ---
+    // --- 履歴表示 ---
     function renderHistory() {
       const list = document.getElementById('historyList');
       list.innerHTML = '';
